@@ -12,5 +12,10 @@
     "url": "git+ssh://git@github.com:yusei-hyodo/mojiokoshi-line-bot.git"
   },
   "author": "yusei-hyodo (https://github.com/yusei-hyodo/)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@line/bot-sdk": "^6.8.4",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
+  }
 }
