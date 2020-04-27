@@ -108,12 +108,21 @@ const replyText = (token, texts) => {
  * 画像をテキストに変換する関数
  * @param {Number} messageId
  */
-const replyText = (token, texts) => {
-  texts = Array.isArray(texts) ? texts : [texts];
-  return client.replyMessage(
-    token,
-    texts.map((text) => ({ type: 'text', text }))
-  );
+const imageToText = (messageId) => {
+};
+
+/**
+ * 音声をテキストに変換する関数
+ * @param {Number} messageId
+ */
+const imageToText = (messageId) => {
+};
+
+/**
+ * 動画をテキストに変換する関数
+ * @param {Number} messageId
+ */
+const imageToText = (messageId) => {
 };
 
 module.exports = router
