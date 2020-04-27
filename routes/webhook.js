@@ -146,6 +146,22 @@ const audioToText = async (messageId, duration) => {
  * @param {Number} messageId
  */
 const videoToText = async (messageId, duration) => {
+  if (duration >= ONE_MINUTES) return '1分未満の動画を送信してください'
+  let buffer = await func.getContentBuffer(messageId)
+  buffer = await func.videoToFlac(buffer)
+
+  const metaData = await func.getAudioMetaData(buffer)
+  const text = await gcloudApi.cloudSpeechToText(
+    buffer,
+    {
+      sampleRateHertz: metaData.sampleRateHertz,
+      audioChannelCount: metaData.audioChannelCount
+    }
+  )
+
+  const texts = await func.getTextArray(text)
+
+  return texts
 };
 
 module.exports = router
