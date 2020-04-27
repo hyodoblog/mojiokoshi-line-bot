@@ -5,6 +5,8 @@
  */
 const line = require('@line/bot-sdk')
 const express = require('express')
+const gcloudApi = require('../lib/gcloud-api')
+const func = require('../lib/index')
 
 /**
  * 初期化
@@ -61,27 +63,28 @@ const handlerEvent = async (event) => {
     case 'message':
       const message = event.message
       const messageId = event.message.id
+      let text
       switch (message.type) {
         case 'image':
           // 画像を受信した際の処理
-          const text = await imageToText(messageId)
+          text = await imageToText(messageId)
           await replyText(replyToken, text)
           return '画像を文字起こししました'
 
         case 'audio':
           // 音声を受信した際の処理
-          const text = await audioToText(messageId)
+          text = await audioToText(messageId)
           await replyText(replyToken, text)
           return '音声を文字起こししました'
 
         case 'video':
           // 動画を受信した際の処理
-          const text = await videoToText(messageId)
+          text = await videoToText(messageId)
           await replyText(replyToken, text)
           return '動画を文字起こししました'
 
         default:
-          const text = '画像、音声、動画のどれかを送信してください'
+          text = '画像、音声、動画のどれかを送信してください'
           await replyText(replyToken, text)
           return '画像、音声、動画以外を受信'
       }
@@ -108,21 +111,24 @@ const replyText = (token, texts) => {
  * 画像をテキストに変換する関数
  * @param {Number} messageId
  */
-const imageToText = (messageId) => {
+const imageToText = async (messageId) => {
+  const buffer = await func.getContentBuffer(messageId)
+  const text = await gcloudApi.visionText(buffer)
+  return text
 };
 
 /**
  * 音声をテキストに変換する関数
  * @param {Number} messageId
  */
-const imageToText = (messageId) => {
+const audioToText = async (messageId) => {
 };
 
 /**
  * 動画をテキストに変換する関数
  * @param {Number} messageId
  */
-const imageToText = (messageId) => {
+const videoToText = async (messageId) => {
 };
 
 module.exports = router

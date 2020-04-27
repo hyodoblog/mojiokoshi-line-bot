@@ -105,4 +105,3 @@ dist
 
 # gcp key
 key/
-!key/.keep
