@@ -17,6 +17,7 @@ const config = {
   channelSecret: process.env.CHANNEL_SECRET
 }
 const client = new line.Client(config)
+const ONE_MINUTES = 60000
 
 /**
  * 動作確認用のルート
@@ -62,24 +63,23 @@ const handlerEvent = async (event) => {
 
     case 'message':
       const message = event.message
-      const messageId = event.message.id
       let text
       switch (message.type) {
         case 'image':
           // 画像を受信した際の処理
-          text = await imageToText(messageId)
+          text = await imageToText(message.id)
           await replyText(replyToken, text)
           return '画像を文字起こししました'
 
         case 'audio':
           // 音声を受信した際の処理
-          text = await audioToText(messageId)
+          text = await audioToText(message.id, message.duration)
           await replyText(replyToken, text)
           return '音声を文字起こししました'
 
         case 'video':
           // 動画を受信した際の処理
-          text = await videoToText(messageId)
+          text = await videoToText(message.id, message.duration)
           await replyText(replyToken, text)
           return '動画を文字起こししました'
 
@@ -114,21 +114,38 @@ const replyText = (token, texts) => {
 const imageToText = async (messageId) => {
   const buffer = await func.getContentBuffer(messageId)
   const text = await gcloudApi.visionText(buffer)
-  return text
+  const texts = await func.getTextArray(text)
+  return texts
 };
 
 /**
  * 音声をテキストに変換する関数
  * @param {Number} messageId
  */
-const audioToText = async (messageId) => {
+const audioToText = async (messageId, duration) => {
+  if (duration >= ONE_MINUTES) return '1分未満の音声を送信してください'
+  let buffer = await func.getContentBuffer(messageId)
+  buffer = await func.audioToFlac(buffer)
+
+  const metaData = await func.getAudioMetaData(buffer)
+  const text = await gcloudApi.cloudSpeechToText(
+    buffer,
+    {
+      sampleRateHertz: metaData.sampleRateHertz,
+      audioChannelCount: metaData.audioChannelCount
+    }
+  )
+
+  const texts = await func.getTextArray(text)
+
+  return texts
 };
 
 /**
  * 動画をテキストに変換する関数
  * @param {Number} messageId
  */
-const videoToText = async (messageId) => {
+const videoToText = async (messageId, duration) => {
 };
 
 module.exports = router
