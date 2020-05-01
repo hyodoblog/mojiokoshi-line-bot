@@ -100,12 +100,12 @@ const handlerEvent = async (event) => {
  * @param {String[] | String} texts
  */
 const replyText = (token, texts) => {
-  texts = Array.isArray(texts) ? texts : [texts];
+  texts = Array.isArray(texts) ? texts : [texts]
   return client.replyMessage(
     token,
     texts.map((text) => ({ type: 'text', text }))
-  );
-};
+  )
+}
 
 /**
  * 画像をテキストに変換する関数
@@ -116,7 +116,7 @@ const imageToText = async (messageId) => {
   const text = await gcloudApi.visionText(buffer)
   const texts = await func.getTextArray(text)
   return texts
-};
+}
 
 /**
  * 音声をテキストに変換する関数
@@ -139,7 +139,7 @@ const audioToText = async (messageId, duration) => {
   const texts = await func.getTextArray(text)
 
   return texts
-};
+}
 
 /**
  * 動画をテキストに変換する関数
@@ -162,6 +162,6 @@ const videoToText = async (messageId, duration) => {
   const texts = await func.getTextArray(text)
 
   return texts
-};
+}
 
 module.exports = router
