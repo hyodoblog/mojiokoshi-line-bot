@@ -77,11 +77,11 @@ const handlerEvent = async (event) => {
 * @param {String[] | String} texts
 */
 const replyText = (token, texts) => {
-  texts = Array.isArray(texts) ? texts : [texts];
+  texts = Array.isArray(texts) ? texts : [texts]
   return client.replyMessage(
     token,
     texts.map((text) => ({ type: 'text', text }))
-  );
- };
+  )
+ }
 
 module.exports = router
