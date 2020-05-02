@@ -53,19 +53,35 @@ const handlerEvent = async (event) => {
 
   // イベントの処理
   switch (event.type) {
+    case 'follow':
+      return 'フォローされました'
+  
+    case 'unfollow':
+      return 'フォロー解除されました'
+  
     case 'message':
       const message = event.message
       let text
       switch (message.type) {
-        case 'text':
-          text = message.text
-          await replyText(replyToken, text)
-          return 'オウム返し成功'
+        case 'image':
+          // 画像を受信した際の処理
+          return '画像を文字起こししました'
+  
+        case 'audio':
+          // 音声を受信した際の処理
+          return '音声を文字起こししました'
+  
+        case 'video':
+          // 動画を受信した際の処理
+          return '動画を文字起こししました'
+  
         default:
-          text = 'テキストを送信してください'
+          // 画像、音声、動画以外を受信した際の処理
+          text = '画像、音声、動画を送信していてください'
           await replyText(replyToken, text)
-          return 'その他'
+          return '画像、音声、動画以外を受信'
       }
+     
     default:
       return 'その他'
   }
@@ -82,6 +98,6 @@ const replyText = (token, texts) => {
     token,
     texts.map((text) => ({ type: 'text', text }))
   )
- }
+}
 
 module.exports = router
