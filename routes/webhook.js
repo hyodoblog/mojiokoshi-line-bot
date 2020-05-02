@@ -5,8 +5,6 @@
  */
 const line = require('@line/bot-sdk')
 const express = require('express')
-const gcloudApi = require('../lib/gcloud-api')
-const func = require('../lib/index')
 
 /**
  * 初期化
@@ -55,113 +53,35 @@ const handlerEvent = async (event) => {
 
   // イベントの処理
   switch (event.type) {
-    case 'follow':
-      return 'フォローされました'
-
-    case 'unfollow':
-      return 'フォロー解除されました'
-
     case 'message':
       const message = event.message
       let text
       switch (message.type) {
-        case 'image':
-          // 画像を受信した際の処理
-          text = await imageToText(message.id)
+        case 'text':
+          text = message.text
           await replyText(replyToken, text)
-          return '画像を文字起こししました'
-
-        case 'audio':
-          // 音声を受信した際の処理
-          text = await audioToText(message.id, message.duration)
-          await replyText(replyToken, text)
-          return '音声を文字起こししました'
-
-        case 'video':
-          // 動画を受信した際の処理
-          text = await videoToText(message.id, message.duration)
-          await replyText(replyToken, text)
-          return '動画を文字起こししました'
-
+          return 'オウム返し成功'
         default:
-          text = '画像、音声、動画のどれかを送信してください'
+          text = 'テキストを送信してください'
           await replyText(replyToken, text)
-          return '画像、音声、動画以外を受信'
+          return 'その他'
       }
-    
     default:
       return 'その他'
   }
 }
 
 /**
- * テキストを返信する関数
- * @param {String} token
- * @param {String[] | String} texts
- */
+* テキストを返信する関数
+* @param {String} token
+* @param {String[] | String} texts
+*/
 const replyText = (token, texts) => {
-  texts = Array.isArray(texts) ? texts : [texts]
+  texts = Array.isArray(texts) ? texts : [texts];
   return client.replyMessage(
     token,
     texts.map((text) => ({ type: 'text', text }))
-  )
-}
-
-/**
- * 画像をテキストに変換する関数
- * @param {Number} messageId
- */
-const imageToText = async (messageId) => {
-  const buffer = await func.getContentBuffer(messageId)
-  const text = await gcloudApi.visionText(buffer)
-  const texts = await func.getTextArray(text)
-  return texts
-}
-
-/**
- * 音声をテキストに変換する関数
- * @param {Number} messageId
- */
-const audioToText = async (messageId, duration) => {
-  if (duration >= ONE_MINUTES) return '1分未満の音声を送信してください'
-  let buffer = await func.getContentBuffer(messageId)
-  buffer = await func.audioToFlac(buffer)
-
-  const metaData = await func.getAudioMetaData(buffer)
-  const text = await gcloudApi.cloudSpeechToText(
-    buffer,
-    {
-      sampleRateHertz: metaData.sampleRateHertz,
-      audioChannelCount: metaData.audioChannelCount
-    }
-  )
-
-  const texts = await func.getTextArray(text)
-
-  return texts
-}
-
-/**
- * 動画をテキストに変換する関数
- * @param {Number} messageId
- */
-const videoToText = async (messageId, duration) => {
-  if (duration >= ONE_MINUTES) return '1分未満の動画を送信してください'
-  let buffer = await func.getContentBuffer(messageId)
-  buffer = await func.videoToFlac(buffer)
-
-  const metaData = await func.getAudioMetaData(buffer)
-  const text = await gcloudApi.cloudSpeechToText(
-    buffer,
-    {
-      sampleRateHertz: metaData.sampleRateHertz,
-      audioChannelCount: metaData.audioChannelCount
-    }
-  )
-
-  const texts = await func.getTextArray(text)
-
-  return texts
-}
+  );
+ };
 
 module.exports = router
