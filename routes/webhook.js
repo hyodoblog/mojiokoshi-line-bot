@@ -5,6 +5,8 @@
  */
 const line = require('@line/bot-sdk')
 const express = require('express')
+const func = require('../lib/index')
+const gcloudApi = require('../lib/gcloud-api')
 
 /**
  * 初期化
@@ -65,6 +67,8 @@ const handlerEvent = async (event) => {
       switch (message.type) {
         case 'image':
           // 画像を受信した際の処理
+          text = await imageToText(message.id)
+          await replyText(replyToken, text)
           return '画像を文字起こししました'
   
         case 'audio':
@@ -98,6 +102,17 @@ const replyText = (token, texts) => {
     token,
     texts.map((text) => ({ type: 'text', text }))
   )
+}
+
+/**
+* 画像をテキストに変換する関数
+* @param {Number} messageId
+*/
+const imageToText = async (messageId) => {
+  const buffer = await func.getContentBuffer(messageId)
+  const text = await gcloudApi.cloudVisionText(buffer)
+  const texts = await func.getTextArray(text)
+  return texts
 }
 
 module.exports = router
