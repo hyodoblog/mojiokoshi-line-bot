@@ -77,9 +77,11 @@ const handlerEvent = async (event) => {
           await replyText(replyToken, text)
           return '音声を文字起こししました'
   
-        case 'video':
-          // 動画を受信した際の処理
-          return '動画を文字起こししました'
+          case 'video':
+            // 動画を受信した際の処理
+            text = await videoToText(message.id, message.duration)
+            await replyText(replyToken, text)
+            return '動画を文字起こししました'
   
         default:
           // 画像、音声、動画以外を受信した際の処理
@@ -125,6 +127,29 @@ const audioToText = async (messageId, duration) => {
   if (duration >= ONE_MINUTES) return '1分未満の音声を送信してください'
   let buffer = await func.getContentBuffer(messageId)
   buffer = await func.audioToFlac(buffer)
+
+  const metaData = await func.getAudioMetaData(buffer)
+  const text = await gcloudApi.cloudSpeechToText(
+    buffer,
+    {
+      sampleRateHertz: metaData.sampleRateHertz,
+      audioChannelCount: metaData.audioChannelCount
+    }
+  )
+
+  const texts = await func.getTextArray(text)
+
+  return texts
+}
+
+/**
+* 動画をテキストに変換する関数
+* @param {Number} messageId
+*/
+const videoToText = async (messageId, duration) => {
+  if (duration >= ONE_MINUTES) return '1分未満の動画を送信してください'
+  let buffer = await func.getContentBuffer(messageId)
+  buffer = await func.videoToFlac(buffer)
 
   const metaData = await func.getAudioMetaData(buffer)
   const text = await gcloudApi.cloudSpeechToText(
